@@ -8,6 +8,10 @@ const session = require('express-session');
 // Creating the Express server
 const app = express();
 
+// Multer for file uploads [Zeun Add]
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+
 // Connect to SQLite database
 let db = new sqlite3.Database("overall1.db", (err) => {
   if (err) {
@@ -203,7 +207,7 @@ app.post('/login', (req, res) => {
 
         // Create a session for the user
         req.session.user = {
-            id: row.id,
+            id: row.tenant_ID,
             username: row.tenant_username,
             firstName: row.firstName,
             lastName: row.lastName
@@ -261,6 +265,251 @@ app.get('/owner', (req, res) => {
 app.get('/logout', (req, res) => {
   req.session.destroy(() => {
     res.redirect('/');
+  });
+});
+
+
+/// Zeun | Contact
+// Route: แสดงข้อมูล tncontact เฉพาะ tenant ที่ล็อกอิน
+app.get('/tncontact', (req, res) => {
+  if (!req.session.user) {
+      return res.redirect('/');
+  }
+
+  console.log(req.session.user.id);
+  console.log(req.session.user.username);
+  const tenantID = req.session.user.id;
+  
+  const query = `SELECT 
+      c.contact_id,
+      c.tenant_ID,
+      c.topic,
+      c.description,
+      c.picture,
+      c.date,
+      c.status,
+      c.response,
+      c.date,
+      d.dormitory_name
+  FROM contact c
+  JOIN tenant t ON c.tenant_ID = t.tenant_ID
+  JOIN room r ON t.tenant_ID = r.tenant_ID
+  JOIN dormitory d ON r.dormitory_id = d.dormitory_id
+  WHERE c.tenant_ID = ?`;  // แสดงเฉพาะ tenant_ID ที่ล็อกอิน
+  
+
+  db.all(query, [tenantID], (err, rows) => {
+      if (err) {
+          return res.status(500).send('Database error: ' + err.message);
+      }
+
+      res.render('tenantcontact', { contacts: rows, id: req.session.user, user: req.session.user });
+  });
+});
+
+app.get('/ownercontact', (req, res) => {
+  const query = `SELECT 
+    c.contact_id,
+    c.tenant_ID,
+    c.topic,
+    c.description,
+    c.picture,
+    c.date,
+    c.status,
+    c.response,
+    c.response_time,
+    t.tenant_ID,
+    r.room_id,
+    d.dormitory_id,
+    d.dormitory_name,
+    d.owner_id
+    FROM contact c
+    JOIN tenant t ON c.tenant_ID = t.tenant_ID
+    JOIN room r ON t.tenant_ID = r.tenant_ID
+    JOIN dormitory d ON r.dormitory_id = d.dormitory_id
+    ORDER BY c.date DESC`;
+
+  db.all(query, [], (err, rows) => {
+      if (err) {
+          return res.status(500).send('Database error: ' + err.message);
+      }
+
+      // เรนเดอร์หน้า EJS และส่งข้อมูลไป
+      res.render('ownercontact', { contacts: rows });
+  });
+});
+
+// เส้นทางสำหรับดูรายละเอียดของ Contact
+app.get('/contact/:id', (req, res) => {
+  const contactId = req.params.id;
+  const query = `SELECT 
+  c.contact_id,
+  c.tenant_ID,
+  c.topic,
+  c.description,
+  c.picture,
+  c.date,
+  c.status,
+  c.response,
+  c.response_time,
+  t.tenant_ID,
+  t.firstName,
+  t.lastName,
+  t.telephone,
+  r.room_id,
+  d.dormitory_id,
+  d.dormitory_name,
+  d.owner_id
+FROM contact c
+JOIN tenant t ON c.tenant_ID = t.tenant_ID
+JOIN room r ON t.tenant_ID = r.tenant_ID
+JOIN dormitory d ON r.dormitory_id = d.dormitory_id
+WHERE c.contact_id = ?`;
+
+  db.get(query, [contactId], (err, row) => {
+      if (err) {
+          return res.status(500).send('Database error: ' + err.message);
+      }
+      if (!row) {
+          return res.status(404).send('Contact not found');
+      }
+      if (row.picture) {
+          row.picture = `data:image/jpeg;base64,${row.picture.toString('base64')}`;
+      }
+
+      if (row.status === 'pending') {
+          res.render('ownercontactdetail', { contact: row });
+      } else {
+          res.render('contactdone', { contact: row });
+      }
+
+  });
+});
+
+// เส้นทางสำหรับดูรายละเอียดของ Contact
+app.get('/tncontact/:id', (req, res) => {
+  const contactId = req.params.id;
+  const query = `SELECT 
+  c.contact_id,
+  c.tenant_ID,
+  c.topic,
+  c.description,
+  c.picture,
+  c.date,
+  c.status,
+  c.response,
+  c.response_time,
+  t.tenant_ID,
+  t.firstName,
+  t.lastName,
+  t.telephone,
+  r.room_id,
+  d.dormitory_id,
+  d.dormitory_name,
+  d.owner_id
+FROM contact c
+JOIN tenant t ON c.tenant_ID = t.tenant_ID
+JOIN room r ON t.tenant_ID = r.tenant_ID
+JOIN dormitory d ON r.dormitory_id = d.dormitory_id
+WHERE c.contact_id = ?`;
+
+  db.get(query, [contactId], (err, row) => {
+      if (err) {
+          return res.status(500).send('Database error: ' + err.message);
+      }
+      if (!row) {
+          return res.status(404).send('Contact not found');
+      }
+      if (row.picture) {
+          row.picture = `data:image/jpeg;base64,${row.picture.toString('base64')}`;
+      }
+
+      if (row.status === 'pending') {
+          res.render('tenantcontactdetail', { contact: row });
+      } else {
+          res.render('contactdone', { contact: row });
+      }
+
+  });
+});
+
+
+app.post('/update-contact', (req, res) => {
+  const { contact_id, response } = req.body;
+  if (!contact_id || !response) {
+      return res.json({ success: false, message: "Missing data" });
+  }
+
+  const responseDate = new Date().toISOString();
+
+  const query = `UPDATE contact 
+                 SET status = 'resolved', 
+                     response = ?, 
+                     response_time = ? 
+                 WHERE contact_id = ?`;
+
+  db.run(query, [response, responseDate, contact_id], function (err) {
+      if (err) {
+          console.error("Database Error:", err.message);
+          return res.json({ success: false, message: err.message });
+      }
+      res.json({ success: true });
+  });
+});
+
+
+// Route: Logout
+app.get('/logout', (req, res) => {
+  req.session.destroy(() => {
+      alert("You have been logged out.");
+      res.redirect('/');
+  });
+});
+
+
+// Route: บันทึกข้อมูลจากฟอร์ม
+app.get('/tenantcontactform', (req, res) => {
+  if (!req.session.user) {
+      return res.redirect('/');
+  }
+  res.render('tenantcontactform', { user: req.session.user.username });
+});
+
+// Route: บันทึกข้อมูลจากฟอร์ม
+app.post('/submit-contact', upload.single('picture'), (req, res) => {
+  if (!req.session.user) {
+      return res.redirect('/');
+  }
+  
+  const tenantID = req.session.user.id;
+  const { topic, description } = req.body;
+  let picture = req.file ? req.file.buffer : null;
+  const date = new Date().toISOString();
+  const status = 'pending';
+
+  db.get("SELECT contact_id FROM contact ORDER BY contact_id DESC LIMIT 1", (err, row) => {
+      if (err) {
+          console.error('Database error (SELECT):', err.message);
+          return res.status(500).send('Database error (SELECT)');
+      }
+      
+      let newContactId = "C001";
+      if (row) {
+          let lastId = parseInt(row.contact_id.substring(1));
+          newContactId = `C${(lastId + 1).toString().padStart(3, '0')}`;
+      }
+
+      const insertQuery = `INSERT INTO contact (contact_id, tenant_ID, topic, description, picture, date, status, response, response_time) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?, NULL, NULL)`;
+
+      db.run(insertQuery, [newContactId, tenantID, topic, description, picture, date, status], (err) => {
+          if (err) {
+              console.error('Database error (INSERT):', err.message);
+              return res.status(500).send('Database error (INSERT)');
+          }
+          console.log("Contact inserted successfully! ID:", newContactId);
+          res.redirect('/tncontact');
+      });
   });
 });
 
