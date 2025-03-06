@@ -136,41 +136,57 @@ app.get('/', (req, res) => {
     res.render('start');
 });
 
-// API route for user registration
 app.post('/register', (req, res) => {
-    const { username, password, firstName, lastName, telephone, email } = req.body;
-    let errors = [];
+  const { username, password, firstName, lastName, telephone, email } = req.body;
+  let errors = [];
 
-    // ตรวจสอบว่า username, email และ fullname ต้องไม่ซ้ำ และ telephone ต้องเป็นเลข 10 หลัก
-    if (!/^[0-9]{10}$/.test(telephone)) {
-        errors.push("หมายเลขโทรศัพท์ต้องมี 10 หลัก");
-    }
+  // ตรวจสอบว่า telephone ต้องเป็นตัวเลข 10 หลัก
+  if (!/^[0-9]{10}$/.test(telephone)) {
+      errors.push("หมายเลขโทรศัพท์ต้องมี 10 หลัก");
+  }
 
-    db.get("SELECT * FROM tenant WHERE tenant_username = ? OR email = ? OR (firstName = ? AND lastName = ?)",
-        [username, email, firstName, lastName], (err, row) => {
-            if (err) {
-                console.log(err);
-                return res.status(500).json({ status: 'error', message: 'Database error' });
-            }
-            if (row) {
-                return res.status(400).json({ status: 'error', message: 'Username, Email หรือ Full Name ถูกใช้ไปแล้ว' });
-            }
+  if (errors.length > 0) {
+      return res.status(400).json({ status: 'error', message: errors.join(", ") });
+  }
 
-            // ถ้าผ่านเงื่อนไข ให้ INSERT ลงฐานข้อมูล
-            db.run("INSERT INTO tenant (tenant_username, tenant_password, firstName, lastName, telephone, email) VALUES (?, ?, ?, ?, ?, ?)",
-                [username, password, firstName, lastName, telephone, email],
-                function (err) {
-                    if (err) {
-                        console.log(err, 'cannot insert user');
-                        return res.status(500).json({ status: 'error', message: 'Database error' });
-                    }
-                    console.log('Insert user success');
-                    res.status(200).json({ status: 'success', message: 'User registered successfully' });
-                }
-            );
-        }
-    );
+  // ตรวจสอบความซ้ำซ้อนของ username, email และชื่อเต็ม
+  db.get("SELECT * FROM tenant WHERE tenant_username = ? OR email = ? OR (firstName = ? AND lastName = ?)",
+      [username, email, firstName, lastName], (err, row) => {
+          if (err) {
+              console.error(err);
+              return res.status(500).json({ status: 'error', message: 'Database error' });
+          }
+          if (row) {
+              return res.status(400).json({ status: 'error', message: 'Username, Email หรือ Full Name ถูกใช้ไปแล้ว' });
+          }
+
+          // นับจำนวน tenant ที่มีอยู่เพื่อสร้าง tenant_ID ใหม่
+          db.get("SELECT COUNT(*) AS count FROM tenant", [], (err, result) => {
+              if (err) {
+                  console.error(err);
+                  return res.status(500).json({ status: 'error', message: 'Database error' });
+              }
+
+              let count = result.count + 1;
+              let tenant_ID = `T${count.toString().padStart(3, '0')}`; // สร้าง ID ในรูปแบบ T001, T002, T003
+
+              // INSERT ข้อมูลใหม่ลงฐานข้อมูล
+              db.run("INSERT INTO tenant (tenant_ID, tenant_username, tenant_password, firstName, lastName, telephone, email) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                  [tenant_ID, username, password, firstName, lastName, telephone, email],
+                  function (err) {
+                      if (err) {
+                          console.error(err, 'cannot insert user');
+                          return res.status(500).json({ status: 'error', message: 'Database error' });
+                      }
+                      console.log('Insert user success');
+                      res.status(200).json({ status: 'success', message: 'User registered successfully', tenant_ID });
+                  }
+              );
+          });
+      }
+  );
 });
+
 
 // API route for user login
 app.post('/login', (req, res) => {
