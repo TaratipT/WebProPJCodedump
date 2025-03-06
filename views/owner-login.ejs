@@ -41,6 +41,26 @@
     crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
   <script>
+    document.getElementById('username').addEventListener('focus', function () {
+      this.nextElementSibling.textContent = 'Username';
+    });
+
+    document.getElementById('username').addEventListener('blur', function () {
+      if (!this.value) {
+        this.nextElementSibling.textContent = 'Username/ชื่อผู้ใช้';
+      }
+    });
+
+    document.getElementById('password').addEventListener('focus', function () {
+      this.nextElementSibling.textContent = 'Password';
+    });
+
+    document.getElementById('password').addEventListener('blur', function () {
+      if (!this.value) {
+        this.nextElementSibling.textContent = 'Password/รหัสผ่าน';
+      }
+    });
+    
     document.addEventListener("mousemove", (event) => {
       let x = event.clientX / window.innerWidth * 200;
       let y = event.clientY / window.innerHeight * 500;
