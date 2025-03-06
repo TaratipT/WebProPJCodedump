@@ -16,11 +16,16 @@
         .container {
             max-width: 800px;
             margin: auto;
-            background: white;
+            background: #b6d2d5;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             position: relative;
+        }
+
+        .scroll {
+            overflow-y: auto;
+            max-height: 800px;
         }
 
         h2 {
@@ -74,6 +79,7 @@
         .topic {
             background-color: #f0f8ff;
             padding: 10px;
+            text-align: left;
         }
 
         .button-container {
@@ -94,7 +100,7 @@
         }
 
         .add-contact-btn:hover {
-            background-color: #0056b3;
+            background-color: #79baff;
         }
     </style>
 </head>
@@ -105,7 +111,7 @@
         <img src="/assets/apartment 1.svg" alt="apartment" draggable="false"
             style="position: absolute; right: 20px; bottom: 20px;">
         <%- include('navbar.ejs') %>
-            <div class="container mt-5">
+            <div class="container scroll mt-5">
                 <h2>ประวัติการติดต่อ</h2>
                 <% contacts.forEach(contact=> { %>
                     <div class="contact-item">

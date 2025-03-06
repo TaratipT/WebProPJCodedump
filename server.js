@@ -137,7 +137,10 @@ app.use(bodyParser.json());
 
 // Route for the home page
 app.get('/', (req, res) => {
-    res.render('start');
+  if (req.session.user) {
+      return res.render('home', { user: req.session.user }); // Render หน้า home ถ้ามี session
+  }
+  res.render('start'); // ถ้าไม่มี session ให้แสดงหน้าเริ่มต้น (start)
 });
 
 app.post('/register', (req, res) => {
@@ -227,7 +230,10 @@ app.get('/home', (req, res) => {
 
 // Route for the owner login page
 app.get('/owner-login', (req, res) => {
-    res.render('owner-login');
+  if (req.session.owner) {
+      return res.render('owner', { owner: req.session.owner }); // Render หน้า owner ถ้ามี session
+  }
+  res.render('owner-login'); // ถ้าไม่มี session ให้แสดงหน้า login
 });
 
 // API route for owner login
