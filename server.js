@@ -220,7 +220,7 @@ app.post('/login', (req, res) => {
     });
 });
 
-// Route for the ref page
+// Route for the home page
 app.get('/home', (req, res) => {
     if (!req.session.user) {
         return res.redirect('/');
