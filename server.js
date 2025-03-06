@@ -9,7 +9,7 @@ const session = require('express-session');
 const app = express();
 
 // Connect to SQLite database
-let db = new sqlite3.Database("udee.db", (err) => {
+let db = new sqlite3.Database("overall1.db", (err) => {
   if (err) {
     return console.error(err.message);
   }
@@ -57,7 +57,7 @@ app.get("/tenant/:dormitory_id", function (req, res) {
       d.dormitory_id, d.dormitory_name, d.dorm_address, d.province, d.district, d.subdistrict, d.zip_code,
       di.information, di.dorm_pic,
       f.facility,
-      r.room_id, r.contract_id, r.room_type_id,
+      r.room_id, r.room_type_id,
       rt.room_type_name, rt.price
     FROM dormitory d
     LEFT JOIN dormitory_info di ON d.dormitory_id = di.dormitory_id
@@ -69,7 +69,7 @@ app.get("/tenant/:dormitory_id", function (req, res) {
   db.all(query, [dormitory_id], (err, rows) => {
     if (err) {
       console.log(err.message);
-      return res.status(500).send("เกิดข้อผิดพลาดในการดึงข้อมูล");
+      return res.status(500).send(" ");
     }
 
     if (!rows || rows.length === 0) {
@@ -228,25 +228,25 @@ app.get('/owner-login', (req, res) => {
 
 // API route for owner login
 app.post('/owner-login', (req, res) => {
-    const { username, password } = req.body;
+  const { username, password } = req.body;
 
-    db.get("SELECT * FROM owners WHERE owner_username = ? AND owner_password = ?", [username, password], (err, row) => {
-        if (err) {
-            console.log(err);
-            return res.send('<script>alert("Database error"); window.location.href = "/owner-login";</script>');
-        }
-        if (!row) {
-            return res.send('<script>alert("Invalid owner username or password"); window.location.href = "/owner-login";</script>');
-        }
+  db.get("SELECT * FROM owners WHERE owner_username = ? AND owner_password = ?", [username, password], (err, row) => {
+      if (err) {
+          console.log(err);
+          return res.status(500).json({ status: 'error', message: 'Database error' });
+      }
+      if (!row) {
+          return res.status(400).json({ status: 'error', message: 'Invalid owner username or password' });
+      }
 
-        // Create a session for the owner
-        req.session.owner = {
-            id: row.id,
-            username: row.owner_username
-        };
+      // Create a session for the owner
+      req.session.owner = {
+          id: row.id,
+          username: row.owner_username
+      };
 
-        res.redirect('/owner');
-    });
+      res.status(200).json({ status: 'success', message: 'Login successful' });
+  });
 });
 
 // Route for the owner page
