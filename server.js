@@ -284,19 +284,8 @@ app.get('/tncontact', (req, res) => {
   console.log(req.session.user.username);
   const tenantID = req.session.user.id;
   
-  const query = `SELECT 
-      c.contact_id,
-      c.tenant_ID,
-      c.topic,
-      c.description,
-      c.picture,
-      c.date,
-      c.status,
-      c.response,
-      c.date,
-      d.dormitory_name
-  FROM contact c
-  JOIN tenant t ON c.tenant_ID = t.tenant_ID
+  const query = `SELECT c.contact_id, c.tenant_ID, c.topic, c.description, c.picture, c.date, c.status, c.response, c.date, d.dormitory_name
+  FROM contact c JOIN tenant t ON c.tenant_ID = t.tenant_ID
   JOIN room r ON t.tenant_ID = r.tenant_ID
   JOIN dormitory d ON r.dormitory_id = d.dormitory_id
   WHERE c.tenant_ID = ?`;  // แสดงเฉพาะ tenant_ID ที่ล็อกอิน
@@ -312,21 +301,7 @@ app.get('/tncontact', (req, res) => {
 });
 
 app.get('/ownercontact', (req, res) => {
-  const query = `SELECT 
-    c.contact_id,
-    c.tenant_ID,
-    c.topic,
-    c.description,
-    c.picture,
-    c.date,
-    c.status,
-    c.response,
-    c.response_time,
-    t.tenant_ID,
-    r.room_id,
-    d.dormitory_id,
-    d.dormitory_name,
-    d.owner_id
+  const query = `SELECT c.contact_id, c.tenant_ID, c.topic, c.description, c.picture, c.date, c.status, c.response, c.response_time, t.tenant_ID, r.room_id, d.dormitory_id, d.dormitory_name, d.owner_id
     FROM contact c
     JOIN tenant t ON c.tenant_ID = t.tenant_ID
     JOIN room r ON t.tenant_ID = r.tenant_ID
@@ -346,24 +321,7 @@ app.get('/ownercontact', (req, res) => {
 // เส้นทางสำหรับดูรายละเอียดของ Contact
 app.get('/contact/:id', (req, res) => {
   const contactId = req.params.id;
-  const query = `SELECT 
-  c.contact_id,
-  c.tenant_ID,
-  c.topic,
-  c.description,
-  c.picture,
-  c.date,
-  c.status,
-  c.response,
-  c.response_time,
-  t.tenant_ID,
-  t.firstName,
-  t.lastName,
-  t.telephone,
-  r.room_id,
-  d.dormitory_id,
-  d.dormitory_name,
-  d.owner_id
+  const query = `SELECT c.contact_id, c.tenant_ID, c.topic, c.description, c.picture, c.date, c.status, c.response, c.response_time, t.tenant_ID, t.firstName, t.lastName, t.telephone, r.room_id, d.dormitory_id, d.dormitory_name, d.owner_id
 FROM contact c
 JOIN tenant t ON c.tenant_ID = t.tenant_ID
 JOIN room r ON t.tenant_ID = r.tenant_ID
@@ -393,24 +351,7 @@ WHERE c.contact_id = ?`;
 // เส้นทางสำหรับดูรายละเอียดของ Contact
 app.get('/tncontact/:id', (req, res) => {
   const contactId = req.params.id;
-  const query = `SELECT 
-  c.contact_id,
-  c.tenant_ID,
-  c.topic,
-  c.description,
-  c.picture,
-  c.date,
-  c.status,
-  c.response,
-  c.response_time,
-  t.tenant_ID,
-  t.firstName,
-  t.lastName,
-  t.telephone,
-  r.room_id,
-  d.dormitory_id,
-  d.dormitory_name,
-  d.owner_id
+  const query = `SELECT c.contact_id, c.tenant_ID, c.topic, c.description, c.picture, c.date, c.status, c.response, c.response_time, t.tenant_ID, t.firstName, t.lastName, t.telephone, r.room_id, d.dormitory_id, d.dormitory_name, d.owner_id
 FROM contact c
 JOIN tenant t ON c.tenant_ID = t.tenant_ID
 JOIN room r ON t.tenant_ID = r.tenant_ID
