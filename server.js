@@ -266,7 +266,47 @@ app.get('/owner', (req, res) => {
     }
     res.render('owner', { owner: req.session.owner });
 });
+//API ROUTE FOR VIEW HISTORY
+app.get('/history', (req, res) => {
+  let query = '';
+  let params = [];
 
+  if (req.session.owner) {
+      // Owner view query
+      query = `
+          SELECT b.bill_id, r.room_id, d.dormitory_name, 
+          (b.rent_fee + b.water_bill + b.electricity_bill + b.internet_bill + b.central_service_fee + b.security_fee + b.fine) AS total_amount
+          
+          FROM bill b
+          JOIN room r ON b.room_id = r.room_id
+          JOIN dormitory d ON r.dormitory_id = d.dormitory_id
+          WHERE d.owner_id = ?
+      `;
+      params = [req.session.owner.id];
+  } else if (req.session.user) {
+      // Tenant view query
+      query = `
+          SELECT b.bill_id, b.room_id, 
+          (b.rent_fee + b.water_bill + b.electricity_bill + b.internet_bill + b.central_service_fee + b.security_fee + b.fine) AS total_amount
+          FROM bill b
+          JOIN contract c ON b.contract_id = c.contract_id
+          WHERE c.tenant_ID = ?
+      `;
+      params = [req.session.user.id];
+  } else {
+      // No session found
+      return res.redirect('/');
+  }
+
+  db.all(query, params, (err, rows) => {
+      if (err) {
+          console.error("Database Error:", err.message);
+          return res.status(500).send('Database error: ' + err.message);
+      }
+
+      res.render('history', { bills: rows, user: req.session.user || req.session.owner });
+  });
+});
 // Route: Logout
 app.get('/logout', (req, res) => {
   req.session.destroy(() => {
@@ -519,6 +559,9 @@ app.post('/submit-contact', upload.single('picture'), (req, res) => {
   });
 });
 
+
+
+
 app.listen(port, () => {
-  console.log(`Starting node.js at port ${port}`);
+  console.log(`Server started on http://localhost:${port}`);
 });
