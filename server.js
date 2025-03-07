@@ -29,9 +29,7 @@ app.use(session({
 }));
 
 // static resourse & templating engine
-app.use(express.static("public"));
 app.use("/assets", express.static(path.join(__dirname, "assets")));
-app.use("/public", express.static(path.join(__dirname, "public")));
 app.use("/style", express.static(path.join(__dirname, "style")));
 // Set EJS as templating engine
 app.set("view engine", "ejs");
