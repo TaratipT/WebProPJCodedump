@@ -96,7 +96,7 @@
             <br>
             <% if (contact.response) { %>
                 <p><strong>คำตอบ:</strong> <%= contact.response %></p>
-                <p><strong>ตอบกลับเมื่อ:</strong> <%= new Date(contact.response_date).toLocaleString('th-TH') %></p>
+                <p><strong>ตอบกลับเมื่อ:</strong> <%= new Date(contact.response_time).toLocaleString('th-TH') %></p>
             <% } %>
         </div>
         
