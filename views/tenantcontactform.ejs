@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tenant Contact Form</title>
     <link rel="stylesheet" href="/style.css">
-</head>
-<body>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -75,20 +73,23 @@
             background-color: #0056b3;
         }
     </style>
-    
-    <div class="container">
-        <h2>Submit a Contact Request</h2>
+</head>
+<body style="background-color: #DAE7E7;">
+    <img src="/assets/apartment 1.svg" alt="apartment" draggable="false"
+            style="position: fixed; right: 20px; bottom: 20px;">
+    <div class="container"><body style="background-color: #DAE7E7;">
+        <h2>ส่งฟอร์มติดต่อไปยังเจ้าของหอพัก</h2>
         <form action="/submit-contact" method="POST" enctype="multipart/form-data">
-            <label for="topic">Topic:</label>
+            <label for="topic">หัวข้อ:</label>
             <input type="text" id="topic" name="topic" required><br>
             
-            <label for="description">Description:</label>
+            <label for="description">รายละเอียดการติดต่อ:</label>
             <textarea id="description" name="description" required></textarea><br>
             
-            <label for="picture">Upload Picture:</label>
+            <label for="picture">อัพโหลดรูปภาพ (หากมี):</label>
             <input type="file" id="picture" name="picture" accept="image/*"><br>
             
-            <button type="submit">Submit</button>
+            <button type="submit">ส่ง</button>
         </form>
     </div>
 </body>
