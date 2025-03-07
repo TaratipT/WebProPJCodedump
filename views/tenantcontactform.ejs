@@ -69,7 +69,28 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
 
-        button:hover {
+        .button-group {
+             display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .back-button {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-right: 10px; /* ระยะห่างระหว่างปุ่มย้อนกลับและปุ่มส่ง */
+        }
+
+        .back-button:hover {
+            background-color: #5a6268;
+        }
+
+        .submit-button:hover {
             background-color: #0056b3;
         }
     </style>
@@ -89,7 +110,11 @@
             <label for="picture">อัพโหลดรูปภาพ (หากมี):</label>
             <input type="file" id="picture" name="picture" accept="image/*"><br>
             
-            <button type="submit">ส่ง</button>
+            <div class="button-group">
+                <button type="button" class="back-button" onclick="window.history.back()">ย้อนกลับ</button>
+                <button type="submit" class="submit-button">ส่ง</button>
+            </div>
+            
         </form>
     </div>
 </body>
